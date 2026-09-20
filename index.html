@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Verse Memory" />
+  <title>Verse Memory</title>
+  
+  <!-- Tailwind CSS via CDN for Robinhood-style clean aesthetic -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Web App Manifest for Home Screen Installation -->
+  <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiVmVyc2UgTWVtb3J5Iiwic2hvcnRfbmFtZSI6IlZlcnNlTWVtb3J5Iiwic3RhcnRfdXJsIjoiLi8iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjZmZmZmZmIiwidGhlbWVfY29sb3IiOiIjZmZmZmZmIiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbDt1dGY4LDxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgNTEyIDUxMic+PHJlY3Qgd2lkdGg9JzUxMicgaGVpZ2h0PSc1MTInIGZpbGw9JyMxMGI5ODEnLz48dGV4dCB4PSc1MCUnIHk9JzU1JycgZG9taW5hbnQtYmFzZWxpbmU9J21pZGRsZScgdGV4dC1hbmNob3I9J21pZGRsZScgZm9udC1zaXplPScyNTYnIGZpbGw9J3doaXRlJyBmb250LWZhbWlseT0nc2Fucy1zZXJpZicsIGZvbnQtd2VpZ2h0PSdib2xkJz5WPC90ZXh0Pjwvc3ZnPiIsInNpemVzIjoiNTEyeDUxMiIsInR5cGUiOiJpbWFnZS9zdmcreG1sIn1dfQ==" />
+  
+  <!-- Apple Touch Icon for iOS Home Screen -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%2310b981'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' font-size='256' fill='white' font-family='sans-serif' font-weight='bold'>V</text></svg>" />
+
+  <style>
+    /* Mobile optimization rules */
+    body {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    .safe-area-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-50 px-4 py-3 flex justify-between items-center">
+    <h1 class="text-xl font-bold tracking-tight text-emerald-600 cursor-pointer" onclick="app.navigate('home')">Verse Memory</h1>
+    <div id="auth-status" class="text-xs text-gray-500 flex items-center gap-2">
+      <span id="user-display">Guest</span>
+      <button id="auth-btn" onclick="app.toggleAuth()" class="text-xs font-semibold text-emerald-600 underline">Sign In</button>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main id="app-content" class="flex-1 max-w-md w-full mx-auto p-4 flex flex-col justify-start pb-24 safe-area-bottom">
+    <!-- Screen content injected dynamically via JS -->
+  </main>
+
+  <!-- Navigation Bar -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-bottom z-40">
+    <div class="max-w-md mx-auto flex justify-around p-2 text-center text-xs font-medium text-gray-500">
+      <button onclick="app.navigate('home')" id="nav-home" class="flex-1 py-2 flex flex-col items-center text-emerald-600">
+        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Home
+      </button>
+      <button onclick="app.navigate('practice-menu')" id="nav-practice" class="flex-1 py-2 flex flex-col items-center hover:text-emerald-600">
+        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Practice
+      </button>
+      <button onclick="app.navigate('add')" id="nav-add" class="flex-1 py-2 flex flex-col items-center hover:text-emerald-600">
+        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Add Verse
+      </button>
+    </div>
+  </nav>
+
+  <!-- Application Logic -->
+  <script>
+    // Storage Abstraction (Uses LocalStorage with API contract for cloud extension)
+    class StorageService {
+      constructor() {
+        this.STORAGE_KEY = 'verse_memory_db_v1';
+        this.USER_KEY = 'verse_memory_user_v1';
+        this.init();
+      }
+
+      init() {
+        if (!localStorage.getItem(this.STORAGE_KEY)) {
+          const defaultVerses = [
+            {
+              id: '1',
+              reference: 'John 3:16',
+              text: 'For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.',
+              category: 'Faith',
+              translation: 'NIV',
+              notes: 'Core gospel passage.',
+              tags: 'salvation, love',
+              memorization_status: 'Learning',
+              practice_count: 3,
+              successful_recitations: 2,
+              average_score: 92,
+              last_practiced: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              sort_order: 1
+            },
+            {
+              id: '2',
+              reference: 'Philippians 4:13',
+              text: 'I can do all this through him who gives me strength.',
+              category: 'Encouragement',
+              translation: 'NIV',
+              notes: 'Strength in trial.',
+              tags: 'strength, power',
+              memorization_status: 'New',
+              practice_count: 0,
+              successful_recitations: 0,
+              average_score: 0,
+              last_practiced: null,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              sort_order: 2
+            }
+          ];
+          localStorage.setItem(this.STORAGE_KEY, JSON.stringify(defaultVerses));
+        }
+      }
+
+      getVerses() {
+        return JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '[]');
+      }
+
+      saveVerses(verses) {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(verses));
+      }
+
+      addVerse(verseData) {
+        const verses = this.getVerses();
+        const newVerse = {
+          id: Date.now().toString(),
+          reference: verseData.reference,
+          text: verseData.text,
+          category: verseData.category || 'General',
+          translation: verseData.translation || '',
+          notes: verseData.notes || '',
+          tags: verseData.tags || '',
+          memorization_status: 'New',
+          practice_count: 0,
+          successful_recitations: 0,
+          average_score: 0,
+          last_practiced: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          sort_order: verses.length + 1
+        };
+        verses.push(newVerse);
+        this.saveVerses(verses);
+        return newVerse;
+      }
+
+      updateVerse(id, updatedFields) {
+        const verses = this.getVerses();
+        const index = verses.findIndex(v => v.id === id);
+        if (index !== -1) {
+          verses[index] = { ...verses[index], ...updatedFields, updated_at: new Date().toISOString() };
+          this.saveVerses(verses);
+        }
+      }
+
+      deleteVerse(id) {
+        const verses = this.getVerses().filter(v => v.id !== id);
+        this.saveVerses(verses);
+      }
+
+      getUser() {
+        return JSON.parse(localStorage.getItem(this.USER_KEY) || 'null');
+      }
+
+      setUser(user) {
+        if (user) {
+          localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+        } else {
+          localStorage.removeItem(this.USER_KEY);
+        }
+      }
+    }
+
+    // Speech & Text Engine for Recitation & Comparison
+    class RecitationEngine {
+      static normalize(text) {
+        return text
+          .toLowerCase()
+          .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"'’]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      static compare(expected, actual) {
+        const cleanExpected = this.normalize(expected).split(' ').filter(Boolean);
+        const cleanActual = this.normalize(actual).split(' ').filter(Boolean);
+
+        if (cleanExpected.length === 0) return { score: 100, diff: [] };
+
+        let matches = 0;
+        const diff = [];
+        const actualSet = [...cleanActual];
+
+        cleanExpected.forEach(word => {
+          const matchIdx = actualSet.indexOf(word);
+          if (matchIdx !== -1) {
+            matches++;
+            diff.push({ word, status: 'correct' });
+            actualSet.splice(matchIdx, 1);
+          } else {
+            diff.push({ word, status: 'missing' });
+          }
+        });
+
+        const rawScore = (matches / cleanExpected.length) * 100;
+        const score = Math.min(100, Math.max(0, Math.round(rawScore)));
+
+        return { score, diff };
+      }
+    }
+
+    // Primary Application Controller
+    class App {
+      constructor() {
+        this.storage = new StorageService();
+        this.currentView = 'home';
+        this.currentVerseIndex = 0;
+        this.practiceList = [];
+        this.speechRecognition = null;
+        this.isRecording = false;
+        this.synth = window.speechSynthesis;
+        this.listenUtterance = null;
+        this.listenPlaying = false;
+        this.listenSpeed = 1.0;
+        
+        this.initSpeech();
+      }
+
+      initSpeech() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+          this.speechRecognition = new SpeechRecognition();
+          this.speechRecognition.continuous = true;
+          this.speechRecognition.interimResults = true;
+          this.speechRecognition.lang = 'en-US';
+        }
+      }
+
+      navigate(view, params = {}) {
+        this.currentView = view;
+        this.params = params;
+
+        // Update Nav UI
+        ['home', 'practice-menu', 'add'].forEach(nav => {
+          const btn = document.getElementById(`nav-${nav}`);
+          if (btn) {
+            if (nav === view || (view.startsWith('practice') && nav === 'practice-menu')) {
+              btn.className = 'flex-1 py-2 flex flex-col items-center text-emerald-600 font-semibold';
+            } else {
+              btn.className = 'flex-1 py-2 flex flex-col items-center text-gray-500 hover:text-emerald-600';
+            }
+          }
+        });
+
+        // Stop speech tasks on view shift
+        if (this.synth) this.synth.cancel();
+        if (this.isRecording && this.speechRecognition) {
+          this.speechRecognition.stop();
+          this.isRecording = false;
+        }
+
+        this.render();
+      }
+
+      toggleAuth() {
+        const user = this.storage.getUser();
+        if (user) {
+          this.storage.setUser(null);
+          this.updateAuthUI();
+          this.navigate('home');
+        } else {
+          this.renderAuthModal();
+        }
+      }
+
+      updateAuthUI() {
+        const user = this.storage.getUser();
+        const display = document.getElementById('user-display');
+        const btn = document.getElementById('auth-btn');
+        if (user) {
+          display.textContent = user.email.split('@')[0];
+          btn.textContent = 'Sign Out';
+        } else {
+          display.textContent = 'Guest';
+          btn.textContent = 'Sign In';
+        }
+      }
+
+      // Spaced Repetition Selection Logic
+      getSmartPracticeList(category = 'All') {
+        let verses = this.storage.getVerses();
+        if (category !== 'All') {
+          verses = verses.filter(v => v.category === category);
+        }
+        
+        // Sort: lower average score and fewer recitations higher priority
+        return verses.sort((a, b) => {
+          const scoreA = a.average_score || 0;
+          const scoreB = b.average_score || 0;
+          return scoreA - scoreB;
+        });
+      }
+
+      // Main Render Router
+      render() {
+        this.updateAuthUI();
+        const container = document.getElementById('app-content');
+        container.innerHTML = '';
+
+        switch (this.currentView) {
+          case 'home':
+            this.renderHome(container);
+            break;
+          case 'add':
+            this.renderAddEdit(container);
+            break;
+          case 'edit':
+            this.renderAddEdit(container, this.params.id);
+            break;
+          case 'practice-menu':
+            this.renderPracticeMenu(container);
+            break;
+          case 'practice-flashcards':
+            this.renderFlashcards(container);
+            break;
+          case 'practice-recite':
+            this.renderRecite(container);
+            break;
+          case 'practice-listen':
+            this.renderListen(container);
+            break;
+          default:
+            this.renderHome(container);
+        }
+      }
+
+      // 1. HOME SCREEN
+      renderHome(container) {
+        const verses = this.storage.getVerses();
+
+        container.innerHTML = `
+          <!-- Quick Action Stats -->
+          <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm mb-4 text-center">
+            <span class="text-xs uppercase tracking-wider font-semibold text-gray-400">Total Verses</span>
+            <div class="text-4xl font-extrabold text-gray-900 my-1">${verses.length}</div>
+            <div class="grid grid-cols-2 gap-3 mt-4">
+              <button onclick="app.navigate('practice-menu')" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl shadow-md active:bg-emerald-700 transition">
+                Practice
+              </button>
+              <button onclick="app.navigate('add')" class="w-full py-3 bg-emerald-50 text-emerald-700 font-bold rounded-xl active:bg-emerald-100 transition">
+                + Add Verse
+              </button>
+            </div>
+          </div>
+
+          <!-- Saved Verses List -->
+          <div class="flex-1">
+            <div class="flex justify-between items-center mb-3 px-1">
+              <h2 class="text-base font-bold text-gray-800">Your Verses</h2>
+              <span class="text-xs text-gray-400">Tap to edit</span>
+            </div>
+            ${verses.length === 0 ? `
+              <div class="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-200">
+                <p class="text-gray-400 text-sm mb-3">No verses saved yet.</p>
+                <button onclick="app.navigate('add')" class="text-emerald-600 font-semibold text-sm underline">Add your first verse</button>
+              </div>
+            ` : `
+              <div class="space-y-3">
+                ${verses.map(v => `
+                  <div onclick="app.navigate('edit', { id: '${v.id}' })" class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center active:bg-gray-50 transition cursor-pointer">
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <h3 class="font-bold text-gray-900">${v.reference}</h3>
+                        ${v.translation ? `<span class="text-[10px] bg-gray-100 text-gray-600 font-bold px-1.5 py-0.5 rounded">${v.translation}</span>` : ''}
+                      </div>
+                      <span class="text-xs text-gray-400 font-medium">${v.category || 'General'}</span>
+                    </div>
+                    <div>
+                      <span class="text-xs px-2.5 py-1 rounded-full font-semibold ${
+                        v.memorization_status === 'Memorized' ? 'bg-emerald-100 text-emerald-800' :
+                        v.memorization_status === 'Familiar' ? 'bg-blue-100 text-blue-800' :
+                        v.memorization_status === 'Learning' ? 'bg-amber-100 text-amber-800' :
+                        'bg-gray-100 text-gray-600'
+                      }">
+                        ${v.memorization_status}
+                      </span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </div>
+        `;
+      }
+
+      // 2. ADD / EDIT VERSE
+      renderAddEdit(container, id = null) {
+        const isEdit = !!id;
+        const verse = isEdit ? this.storage.getVerses().find(v => v.id === id) : {};
+
+        container.innerHTML = `
+          <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">${isEdit ? 'Edit Verse' : 'Add New Verse'}</h2>
+            <form id="verse-form" onsubmit="app.handleSaveVerse(event, '${id || ''}')" class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Bible Reference *</label>
+                <input type="text" id="field-reference" required placeholder="e.g. John 3:16" value="${verse.reference || ''}" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500 font-medium" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Verse Text *</label>
+                <textarea id="field-text" required rows="4" placeholder="For God so loved the world..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500 font-medium">${verse.text || ''}</textarea>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Category</label>
+                  <input type="text" id="field-category" placeholder="e.g. Faith" value="${verse.category || ''}" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500 font-medium" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Translation</label>
+                  <input type="text" id="field-translation" placeholder="e.g. ESV" value="${verse.translation || ''}" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500 font-medium" />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Notes (Optional)</label>
+                <input type="text" id="field-notes" placeholder="Context or meaning" value="${verse.notes || ''}" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500 font-medium" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Tags (Optional)</label>
+                <input type="text" id="field-tags" placeholder="salvation, gospel" value="${verse.tags || ''}" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-500 font-medium" />
+              </div>
+
+              <button type="submit" class="w-full py-3.5 bg-emerald-600 text-white font-bold rounded-xl shadow-md active:bg-emerald-700 transition mt-2">
+                Save Verse
+              </button>
+
+              ${isEdit ? `
+                <button type="button" onclick="app.handleDeleteVerse('${id}')" class="w-full py-3 text-red-600 font-semibold text-sm rounded-xl hover:bg-red-50 transition">
+                  Delete Verse
+                </button>
+              ` : ''}
+            </form>
+          </div>
+        `;
+      }
+
+      handleSaveVerse(e, id) {
+        e.preventDefault();
+        const payload = {
+          reference: document.getElementById('field-reference').value,
+          text: document.getElementById('field-text').value,
+          category: document.getElementById('field-category').value,
+          translation: document.getElementById('field-translation').value,
+          notes: document.getElementById('field-notes').value,
+          tags: document.getElementById('field-tags').value,
+        };
+
+        if (id) {
+          this.storage.updateVerse(id, payload);
+        } else {
+          this.storage.addVerse(payload);
+        }
+        this.navigate('home');
+      }
+
+      handleDeleteVerse(id) {
+        if (confirm('Are you sure you want to delete this verse?')) {
+          this.storage.deleteVerse(id);
+          this.navigate('home');
+        }
+      }
+
+      // 3 & 4. PRACTICE MENU
+      renderPracticeMenu(container) {
+        const verses = this.storage.getVerses();
+
+        if (verses.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-16 bg-white rounded-2xl border border-gray-100">
+              <p class="text-gray-500 mb-4 font-medium">Add verses before practicing.</p>
+              <button onclick="app.navigate('add')" class="py-3 px-6 bg-emerald-600 text-white font-bold rounded-xl shadow">Add Verse</button>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = `
+          <h2 class="text-lg font-bold text-gray-900 mb-4">Select Practice Mode</h2>
+          <div class="space-y-4">
+            <button onclick="app.startPractice('flashcards')" class="w-full p-5 bg-white border border-gray-200 rounded-2xl shadow-sm text-left active:bg-emerald-50 transition flex justify-between items-center">
+              <div>
+                <h3 class="font-bold text-gray-900 text-lg">Flashcards</h3>
+                <p class="text-xs text-gray-500 mt-1">Mental recall with reveal feedback.</p>
+              </div>
+              <span class="text-emerald-600 font-bold">→</span>
+            </button>
+
+            <button onclick="app.startPractice('recite')" class="w-full p-5 bg-white border border-emerald-500 rounded-2xl shadow-sm text-left bg-emerald-50/30 active:bg-emerald-100 transition flex justify-between items-center">
+              <div>
+                <h3 class="font-bold text-emerald-900 text-lg">Recite (Voice)</h3>
+                <p class="text-xs text-emerald-700 mt-1">Speak into mic & calculate match accuracy.</p>
+              </div>
+              <span class="text-emerald-600 font-bold">→</span>
+            </button>
+
+            <button onclick="app.startPractice('listen')" class="w-full p-5 bg-white border border-gray-200 rounded-2xl shadow-sm text-left active:bg-emerald-50 transition flex justify-between items-center">
+              <div>
+                <h3 class="font-bold text-gray-900 text-lg">Listen Mode</h3>
+                <p class="text-xs text-gray-500 mt-1">Audio playback with customizable speed.</p>
+              </div>
+              <span class="text-emerald-600 font-bold">→</span>
+            </button>
+          </div>
+        `;
+      }
+
+      startPractice(mode) {
+        this.practiceList = this.getSmartPracticeList();
+        this.currentVerseIndex = 0;
+        this.navigate(`practice-${mode}`);
+      }
+
+      // FLASHCARDS MODE
+      renderFlashcards(container) {
+        const verse = this.practiceList[this.currentVerseIndex];
+        if (!verse) return this.renderFinished(container);
+
+        container.innerHTML = `
+          <div class="flex-1 flex flex-col justify-between">
+            <div class="text-xs text-gray-400 font-bold uppercase tracking-wider text-center">
+              Verse ${this.currentVerseIndex + 1} of ${this.practiceList.length}
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm text-center my-auto min-h-[260px] flex flex-col justify-center items-center">
+              <h2 class="text-2xl font-black text-gray-900 mb-2">${verse.reference}</h2>
+              <span class="text-xs text-gray-400 mb-6 font-semibold">${verse.translation || 'Standard'}</span>
+              
+              <div id="flashcard-content" class="w-full">
+                <button onclick="app.revealFlashcard()" class="w-full py-4 bg-gray-100 text-gray-700 font-bold rounded-xl active:bg-gray-200 transition">
+                  Show Verse
+                </button>
+              </div>
+            </div>
+
+            <div id="flashcard-actions" class="grid grid-cols-2 gap-3 opacity-30 pointer-events-none">
+              <button onclick="app.scoreFlashcard(false)" class="py-4 bg-amber-100 text-amber-900 font-bold rounded-xl text-center">Need Practice</button>
+              <button onclick="app.scoreFlashcard(true)" class="py-4 bg-emerald-600 text-white font-bold rounded-xl text-center shadow">Got It</button>
+            </div>
+          </div>
+        `;
+      }
+
+      revealFlashcard() {
+        const verse = this.practiceList[this.currentVerseIndex];
+        document.getElementById('flashcard-content').innerHTML = `
+          <p class="text-lg font-medium text-gray-800 leading-relaxed">${verse.text}</p>
+        `;
+        document.getElementById('flashcard-actions').className = 'grid grid-cols-2 gap-3 opacity-100 pointer-events-auto transition';
+      }
+
+      scoreFlashcard(success) {
+        const verse = this.practiceList[this.currentVerseIndex];
+        const newStatus = success ? (verse.memorization_status === 'New' ? 'Learning' : 'Memorized') : 'Learning';
+        this.storage.updateVerse(verse.id, {
+          practice_count: (verse.practice_count || 0) + 1,
+          memorization_status: newStatus,
+          last_practiced: new Date().toISOString()
+        });
+
+        this.nextVerse('practice-flashcards');
+      }
+
+      // 5. RECITE MODE (SPEECH RECOGNITION)
+      renderRecite(container) {
+        const verse = this.practiceList[this.currentVerseIndex];
+        if (!verse) return this.renderFinished(container);
+
+        container.innerHTML = `
+          <div class="flex-1 flex flex-col justify-between">
+            <div class="text-xs text-gray-400 font-bold uppercase tracking-wider text-center">
+              Recitation Mode (${this.currentVerseIndex + 1}/${this.practiceList.length})
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm text-center my-4">
+              <h2 class="text-2xl font-black text-gray-900 mb-1">${verse.reference}</h2>
+              <p id="recitation-status" class="text-xs text-gray-400 mb-4 font-semibold">Tap below and speak clearly</p>
+
+              <div id="recitation-output" class="min-h-[120px] p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-center">
+                <p class="text-gray-400 text-sm italic">Transcribed audio will display here...</p>
+              </div>
+            </div>
+
+            <div id="recitation-controls" class="space-y-3">
+              <button id="rec-btn" onclick="app.toggleRecitation()" class="w-full py-4 bg-emerald-600 text-white font-extrabold rounded-2xl shadow-lg text-lg flex items-center justify-center gap-2">
+                <span id="rec-dot" class="w-3 h-3 bg-white rounded-full hidden"></span>
+                <span id="rec-text">Start Reciting</span>
+              </button>
+
+              <div class="grid grid-cols-2 gap-3">
+                <button onclick="app.skipRecite()" class="py-3 bg-gray-100 text-gray-700 font-bold rounded-xl text-sm">Show Verse</button>
+                <button onclick="app.nextVerse('practice-recite')" class="py-3 bg-gray-100 text-gray-700 font-bold rounded-xl text-sm">Next Verse</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      toggleRecitation() {
+        if (!this.speechRecognition) {
+          alert('Speech Recognition is not supported by this browser. Try Safari on iOS or Chrome on Android.');
+          return;
+        }
+
+        const btn = document.getElementById('rec-btn');
+        const text = document.getElementById('rec-text');
+        const dot = document.getElementById('rec-dot');
+        const status = document.getElementById('recitation-status');
+        const output = document.getElementById('recitation-output');
+
+        if (!this.isRecording) {
+          this.isRecording = true;
+          text.textContent = 'Listening... (Tap to Finish)';
+          dot.classList.remove('hidden');
+          dot.classList.add('animate-ping');
+          status.textContent = 'Speak your verse now';
+          output.innerHTML = '<p class="text-gray-400 text-sm">Listening...</p>';
+
+          let fullTranscript = '';
+
+          this.speechRecognition.onresult = (event) => {
+            fullTranscript = Array.from(event.results)
+              .map(r => r[0].transcript)
+              .join('');
+            output.innerHTML = `<p class="text-gray-800 text-base font-medium">${fullTranscript}</p>`;
+          };
+
+          this.speechRecognition.onerror = (e) => {
+            status.textContent = 'Speech error: ' + e.error;
+            this.stopRecitation(fullTranscript);
+          };
+
+          this.speechRecognition.start();
+        } else {
+          this.stopRecitation(output.innerText);
+        }
+      }
+
+      stopRecitation(transcript) {
+        if (this.speechRecognition) this.speechRecognition.stop();
+        this.isRecording = false;
+        
+        const verse = this.practiceList[this.currentVerseIndex];
+        const result = RecitationEngine.compare(verse.text, transcript);
+
+        // Update Stats
+        const attempts = (verse.practice_count || 0) + 1;
+        const successes = result.score >= 80 ? (verse.successful_recitations || 0) + 1 : (verse.successful_recitations || 0);
+        const avgScore = Math.round((((verse.average_score || 0) * (attempts - 1)) + result.score) / attempts);
+        
+        this.storage.updateVerse(verse.id, {
+          practice_count: attempts,
+          successful_recitations: successes,
+          average_score: avgScore,
+          memorization_status: avgScore > 85 ? 'Memorized' : avgScore > 50 ? 'Familiar' : 'Learning',
+          last_practiced: new Date().toISOString()
+        });
+
+        this.renderRecitationResult(result, verse);
+      }
+
+      renderRecitationResult(result, verse) {
+        const container = document.getElementById('app-content');
+        container.innerHTML = `
+          <div class="flex-1 flex flex-col justify-between">
+            <div class="bg-white p-6 rounded-3xl border border-gray-200 shadow-sm text-center">
+              <span class="text-xs font-bold uppercase tracking-wider ${result.score >= 80 ? 'text-emerald-600' : 'text-amber-600'}">Result Score</span>
+              <div class="text-5xl font-black my-2 ${result.score >= 80 ? 'text-emerald-600' : 'text-amber-600'}">${result.score}%</div>
+              
+              <h3 class="font-bold text-gray-900 mt-4 text-left text-sm">Word Breakdown:</h3>
+              <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 text-left my-2 leading-relaxed flex flex-wrap gap-1">
+                ${result.diff.map(d => `
+                  <span class="${d.status === 'correct' ? 'text-emerald-700 bg-emerald-100 px-1 rounded font-medium' : 'text-red-600 bg-red-100 px-1 rounded font-medium'}">${d.word}</span>
+                `).join('')}
+              </div>
+
+              <h3 class="font-bold text-gray-900 mt-4 text-left text-sm">Target Verse:</h3>
+              <p class="text-xs text-gray-600 text-left mt-1 italic">${verse.text}</p>
+            </div>
+
+            <div class="space-y-2 mt-4">
+              <button onclick="app.navigate('practice-recite')" class="w-full py-3.5 bg-emerald-600 text-white font-bold rounded-xl">Try Again</button>
+              <button onclick="app.nextVerse('practice-recite')" class="w-full py-3.5 bg-gray-100 text-gray-800 font-bold rounded-xl">Next Verse</button>
+            </div>
+          </div>
+        `;
+      }
+
+      skipRecite() {
+        const verse = this.practiceList[this.currentVerseIndex];
+        const output = document.getElementById('recitation-output');
+        output.innerHTML = `<p class="text-gray-900 font-medium text-left">${verse.text}</p>`;
+      }
+
+      // 6. LISTEN MODE (SPEECH SYNTHESIS)
+      renderListen(container) {
+        const verse = this.practiceList[this.currentVerseIndex];
+        if (!verse) return this.renderFinished(container);
+
+        container.innerHTML = `
+          <div class="flex-1 flex flex-col justify-between">
+            <div class="text-xs text-gray-400 font-bold uppercase tracking-wider text-center">
+              Listen Mode (${this.currentVerseIndex + 1}/${this.practiceList.length})
+            </div>
+
+            <div class="bg-white p-8 rounded-3xl border border-gray-200 shadow-sm text-center my-auto">
+              <h2 class="text-2xl font-black text-gray-900 mb-2">${verse.reference}</h2>
+              <span class="text-xs text-gray-400 mb-6 block font-semibold">${verse.translation || 'Standard'}</span>
+              <p class="text-lg font-medium text-gray-800 leading-relaxed mb-4">${verse.text}</p>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 space-y-4">
+              <div class="flex justify-around items-center">
+                <button onclick="app.prevVerse('practice-listen')" class="p-3 text-gray-600 font-bold">Prev</button>
+                <button onclick="app.toggleListenAudio('${encodeURIComponent(verse.text)}')" class="p-4 bg-emerald-600 text-white rounded-full shadow-lg font-bold w-16 h-16 flex items-center justify-center text-xl">
+                  ${this.listenPlaying ? '❚❚' : '▶'}
+                </button>
+                <button onclick="app.nextVerse('practice-listen')" class="p-3 text-gray-600 font-bold">Next</button>
+              </div>
+
+              <div class="flex justify-between items-center px-4 border-t pt-3 text-xs font-bold text-gray-500">
+                <span>Speed:</span>
+                <div class="space-x-2">
+                  <button onclick="app.setSpeed(0.75)" class="px-2 py-1 rounded ${this.listenSpeed === 0.75 ? 'bg-emerald-600 text-white' : 'bg-gray-100'}">0.75x</button>
+                  <button onclick="app.setSpeed(1.0)" class="px-2 py-1 rounded ${this.listenSpeed === 1.0 ? 'bg-emerald-600 text-white' : 'bg-gray-100'}">1x</button>
+                  <button onclick="app.setSpeed(1.25)" class="px-2 py-1 rounded ${this.listenSpeed === 1.25 ? 'bg-emerald-600 text-white' : 'bg-gray-100'}">1.25x</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      toggleListenAudio(encodedText) {
+        const text = decodeURIComponent(encodedText);
+        if (this.listenPlaying) {
+          this.synth.cancel();
+          this.listenPlaying = false;
+          this.render();
+        } else {
+          this.synth.cancel();
+          this.listenUtterance = new SpeechSynthesisUtterance(text);
+          this.listenUtterance.rate = this.listenSpeed;
+          this.listenUtterance.onend = () => {
+            this.listenPlaying = false;
+            this.nextVerse('practice-listen');
+          };
+          this.synth.speak(this.listenUtterance);
+          this.listenPlaying = true;
+          this.render();
+        }
+      }
+
+      setSpeed(speed) {
+        this.listenSpeed = speed;
+        if (this.listenPlaying) {
+          this.synth.cancel();
+          this.listenPlaying = false;
+        }
+        this.render();
+      }
+
+      nextVerse(view) {
+        if (this.currentVerseIndex < this.practiceList.length - 1) {
+          this.currentVerseIndex++;
+          this.navigate(view);
+        } else {
+          this.renderFinished(document.getElementById('app-content'));
+        }
+      }
+
+      prevVerse(view) {
+        if (this.currentVerseIndex > 0) {
+          this.currentVerseIndex--;
+          this.navigate(view);
+        }
+      }
+
+      renderFinished(container) {
+        container.innerHTML = `
+          <div class="text-center py-16 bg-white rounded-3xl border border-gray-100 shadow-sm my-auto">
+            <div class="text-5xl mb-4">🎉</div>
+            <h2 class="text-2xl font-black text-gray-900 mb-2">Practice Complete!</h2>
+            <p class="text-xs text-gray-500 mb-6">You've reviewed all selected verses.</p>
+            <button onclick="app.navigate('home')" class="py-3 px-8 bg-emerald-600 text-white font-bold rounded-xl shadow-md">Done</button>
+          </div>
+        `;
+      }
+
+      // 10. SIMPLE AUTH MODAL
+      renderAuthModal() {
+        const email = prompt('Enter your email to sign in or create an account:');
+        if (email) {
+          this.storage.setUser({ email, id: Date.now().toString() });
+          this.updateAuthUI();
+          alert('Signed in as ' + email);
+        }
+      }
+    }
+
+    // Initialize App globally
+    const app = new App();
+    window.app = app;
+    app.render();
+  </script>
+</body>
+</html>
